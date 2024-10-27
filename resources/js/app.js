@@ -6,6 +6,8 @@
 
 import './bootstrap';
 import { createApp } from 'vue';
+import HolidayModalComponent from './components/HolidayModalComponent.vue';
+
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -36,4 +38,5 @@ Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, 
  * scaffolding. Otherwise, you will need to add an element yourself.
  */
 
+app.component('holidaymodal-component', HolidayModalComponent);
 app.mount('#app');
