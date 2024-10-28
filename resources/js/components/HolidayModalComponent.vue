@@ -1,4 +1,31 @@
  <template>
+  <div class="text-end">
+    <button
+      type="button"
+      class="btn btn-success"
+      data-bs-toggle="modal"
+      data-bs-target="#shinkiModal"
+    >
+      新規
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary mx-1"
+      data-bs-toggle="modal"
+      data-bs-target="#koushinModal"
+      @click="koushin"
+    >
+      更新
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      data-bs-toggle="modal"
+      data-bs-target="#sakuzyoModal"
+    >
+      削除
+    </button>
+  </div>
   <!-- 新規モーダル -->
   <div
     class="modal fade"
@@ -53,9 +80,9 @@
                   </div>
                 </div>
               </form>
-              <div v-if="responseMessage">
+              <!-- <div v-if="responseMessage">
                 <p>{{ responseMessage }}</p>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -96,31 +123,39 @@
           <div class="card">
             <div class="card-header">祝日情報</div>
             <div class="card-body">
-              <div class="row">
-                <div class="col-auto">
-                  <label for="searchDate" class="form-label">日付:</label>
-                  <input
-                    type="date"
-                    name="HolidayDate"
-                    id="searchDate"
-                    class="form-control"
-                    style="width: 400px"
-                  />
-                  <div id="passwordHelpBlock" class="form-text"></div>
-                </div>
+              <form @submit.prevent="editHoliday">
+                <div class="row">
+                  <div class="col-auto">
+                    <label for="editHolidayDate" class="form-label"
+                      >日付:</label
+                    >
+                    <input
+                      type="date"
+                      v-model="editHolidayDate"
+                      name="editHolidayDate"
+                      id="editHolidayDate"
+                      class="form-control"
+                      style="width: 400px"
+                    />
+                    <div id="passwordHelpBlock" class="form-text"></div>
+                  </div>
 
-                <div class="col-auto">
-                  <label for="searchHoliday" class="form-label">祝日名:</label>
-                  <input
-                    type="text"
-                    name="HolidayName"
-                    id="searchHoliday"
-                    class="form-control"
-                    style="width: 400px"
-                  />
-                  <div id="passwordHelpBlock" class="form-text"></div>
+                  <div class="col-auto">
+                    <label for="editHolidayName" class="form-label"
+                      >祝日名:</label
+                    >
+                    <input
+                      type="text"
+                      v-model="editHolidayName"
+                      name="editHolidayName"
+                      id="editHolidayName"
+                      class="form-control"
+                      style="width: 400px"
+                    />
+                    <div id="passwordHelpBlock" class="form-text"></div>
+                  </div>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
@@ -132,7 +167,7 @@
           >
             キャンセル
           </button>
-          <button type="button" class="btn btn-Primary">更新</button>
+          <button class="btn btn-Primary" @click="editHoliday">更新</button>
         </div>
       </div>
     </div>
@@ -182,10 +217,15 @@ export default {
     return {
       addHolidayDate: "",
       addHolidayName: "",
+      editHolidayDate: "",
+      editHolidayName: "",
       responseMessage: "",
+      selectedHoliday: null,
+      holiday: null,
     };
   },
 
+  props: ["selectedValue"],
   methods: {
     async addHoliday() {
       try {
@@ -194,9 +234,47 @@ export default {
           addHolidayName: this.addHolidayName,
         });
         this.responseMessage = response.data.message;
-        // this.$bvModal.hide("shinkiModal"); // モーダルを閉じる
-        // モーダルを閉じる
-        // this.isModalVisible = false;
+
+        window.location.reload();
+      } catch (error) {
+        this.responseMessage =
+          error.response?.data.message || "エラーが発生しました。";
+      }
+    },
+    async koushin() {
+      //   console.log("Selected Holiday:", this.selectedHoliday);
+      if (this.selectedHoliday) {
+        try {
+          // 選択された祝日情報を取得
+          const response = await axios.get(
+            `/api/selected/${this.selectedHoliday}`
+          );
+          const holiday = response.data;
+
+          // フォームにデータをセット
+          this.editHolidayDate = holiday.yyyymmdd; // 日付
+          this.editHolidayName = holiday.holiday_name; // 祝日名
+        } catch (error) {
+          console.error("エラーが発生しました:", error);
+        }
+      } else {
+        alert("祝日を選択してください。");
+      }
+    },
+    async editHoliday() {
+      if (!this.editHolidayDate || !this.editHolidayName) {
+        alert("日付と祝日名は必須です。");
+        return;
+      }
+      try {
+        const response = await axios.post("/api/edit", {
+          editHolidayDate: this.editHolidayDate,
+          editHolidayName: this.editHolidayName,
+          selectedHoliday: this.selectedHoliday,
+        });
+        this.responseMessage = response.data.message;
+
+        window.location.reload(); // 成功時にページをリロード
       } catch (error) {
         this.responseMessage =
           error.response?.data.message || "エラーが発生しました。";

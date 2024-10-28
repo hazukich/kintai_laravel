@@ -43,16 +43,9 @@
                 <div class="card mt-5">
                     <div class="card-header">検索結果</div>
                     <div class="card-body">
-                        <div class="text-end">
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal"
-                                data-bs-target="#shinkiModal">新規</button>
-                            <button type="button" class="btn btn-primary mx-1" data-bs-toggle="modal"
-                                data-bs-target="#koushinModal">更新</button>
-                            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
-                                data-bs-target="#sakuzyoModal">削除</button>
-                        </div>
 
-                        <holidaymodal-component></holidaymodal-component>
+
+                        <holidaymodal-component :selected-value="selectedHoliday"></holidaymodal-component>
 
                         <table class="table mt-4">
                             <thead class="table-dark">
@@ -66,8 +59,9 @@
                                 @if (isset($holidays))
                                     @foreach ($holidays as $holiday)
                                         <tr>
-                                            <th scope="row"><input type="radio" name="item"
-                                                    value="{{ $holiday->id }}"></th>
+                                            <th scope="row"><input type="radio" name="selectedHoliday"
+                                                    value="{{ json_encode($holiday->id) }}" v-model="selectedHoliday"></th>
+                                            {{-- このデータをビューに送りたい！！ --}}
                                             <td>
                                                 @php
                                                     // yyyymmddをYYYY/MM/DD形式に変換
@@ -86,7 +80,7 @@
                                 @elseif(isset($results))
                                     @foreach ($results as $result)
                                         <tr>
-                                            <th scope="row"><input type="radio" name="item"
+                                            <th scope="row"><input type="radio" name="selectedHoliday"
                                                     value="{{ $result->id }}"></th>
                                             <td>
                                                 @php

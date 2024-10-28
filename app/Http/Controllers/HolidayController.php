@@ -9,6 +9,8 @@ use Illuminate\Http\Response; // 追記
 use Illuminate\Support\Facades\DB; // 追記
 use Illuminate\Http\RedirectResponse; // 追記
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+
 
 
 use Illuminate\View\View; // 追記
@@ -51,9 +53,9 @@ class HolidayController extends Controller
 
     }
 
+    //更新
     public function add(Request $request, Response $response)
     {
-
         //バリデーション
         $request->validate([
             'addHolidayDate' => 'required',
@@ -87,4 +89,54 @@ class HolidayController extends Controller
 
     }
 
+
+    public function selectedId(Request $request, Response $response, $id)
+    {
+        $koushinHoliday = Holiday::find($id);
+        if (!$koushinHoliday) {
+            return response()->json(['message' => '祝日が見つかりませんでした。'], );
+        }
+        return response()->json($koushinHoliday);
+    }
+
+    public function edit(Request $request, Response $response)
+    {
+        //バリデーション
+        $request->validate([
+            'editHolidayDate' => 'required',
+            'editHolidayName' => 'required',
+        ]);
+
+        // フォームの入力データを取得
+        $holidayDate = preg_replace("/-/", "", $request->input('editHolidayDate'));
+        $holidayName = $request->input('editHolidayName');
+        $selectedId = $request->input('selectedHoliday');
+
+        // データベース更新処理
+        DB::beginTransaction();
+        try {
+            $editHoliday = Holiday::find($selectedId);
+            $editHoliday->fill([
+                'yyyymmdd' => $holidayDate,
+                'holiday_name' => $holidayName,
+                'updated_at' => Carbon::now('Asia/Tokyo'),
+            ]);
+            $editHoliday->save();
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => '休日が追加されました',
+            ]);
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => '処理に失敗しました。' . $ex->getMessage(),
+            ]);
+
+
+        }
+
+    }
 }

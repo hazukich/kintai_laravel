@@ -33,7 +33,7 @@ Route::controller(HolidayController::class)->group(function () {
     Route::get('holiday', 'index')->middleware('auth')->name('holiday');
     Route::post('holiday/search', 'search')->middleware('auth')->name('holiday.search');
     Route::post('/api/add', 'add')->middleware('auth');
-
-    // Route::post('holiday/edit', 'edit')->middleware('auth');
+    Route::post('/api/edit', 'edit')->middleware('auth');
+    Route::get('/api/selected/{id}', 'selectedId')->middleware('auth');
     // Route::post('holiday/delete', 'delete')->middleware('auth');
 });
